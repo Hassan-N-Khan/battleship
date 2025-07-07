@@ -11,9 +11,10 @@ export class Ship {
     hit() {
         this.hits++;
     }
-
+    getHits() {
+        return this.hits;
+    }
     isSunk() {
-        console.log(`${this.ship} has been hit ${this.hits} times.`);
         return this.hits >= this.length;
     }
 }

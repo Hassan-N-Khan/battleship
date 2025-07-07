@@ -5,7 +5,9 @@ export class Gameboard{
         this.board = Array.from({ length: 10 }, () => Array(10).fill(null));
         this.ships = [];
     }
-
+    getBoard() {
+        return this.board;
+    }
     placeShip(ship, x, y, orientation) {
         if (this.canPlaceShip(ship, x, y, orientation)) {
             for (let i = 0; i < ship.length; i++) {
@@ -35,18 +37,21 @@ export class Gameboard{
 
     receiveAttack(x, y) {
         const target = this.board[y][x];
-        if (target !== true && target !== false && target !== null) {
+        if (this.board[y][x] instanceof Ship) {
+            const target = this.board[y][x];
             console.log(`Hit at (${x}, ${y})!`);
             target.hit();
-            this.board[y][x] = true; // Mark the spot as hit
+            console.log(`This ship has been hit ${target.getHits()} / ${target.getLength()} times.`);
+            if (target.isSunk()) {
+                console.log(`Ship sunk at (${x}, ${y})!`);
+            }
+            this.board[y][x] = true;
             return true;
-        }
-        if (this.board[y][x] === null) {
+        }else if (this.board[y][x] === null) {
             console.log(`Missed at this position (${x}, ${y})!`);
             this.board[y][x] = false; // Mark the spot as missed
             return false; // Already hit or missed
-        }
-        if (this.board[y][x] === true || this.board[y][x] === false) {
+        }else if (this.board[y][x] === true || this.board[y][x] === false) {
             console.log(`Already attacked this position (${x}, ${y})!`);
             return false; // Already hit or missed
         }
@@ -55,5 +60,10 @@ export class Gameboard{
 
     allShipsSunk() {
         return this.ships.every(ship => ship.isSunk());
+    }
+
+    reset() {
+        this.board = Array.from({ length: 10 }, () => Array(10).fill(null));
+        this.ships = [];
     }
 }
