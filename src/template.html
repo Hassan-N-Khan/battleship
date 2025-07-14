@@ -7,11 +7,6 @@
 </head>
 <body>
     <h1>Battleship Game</h1>
-    <form id="ship-form">
-        <label for="ship-coordinate">Tesintg: Etner coordinates</label>
-        <input type="text" id="ship-coordinate" name="ship-coordinate" required>
-        <button type="submit" id="place-bomb">Place bomb</button>
-    </form>
     <div class="game-container">
         <div class="opponent-board">
             <h2>Opponent's Board</h2>
@@ -24,14 +19,6 @@
     </div>
     <div class="ships-container">
         <h2>Your Ships</h2>
-        <form id="place-ship-coordinate">
-            <input type="text" id="player-one-coordinate" name="player-one-coordinate">
-            <select id="orientation">
-                <option value="horizontal">horizontal</option>
-                <option value="vertical">vertical</option>
-            </select>
-            <button type="submit" id="place-ship">Place Ship</button>
-        </form>
         <div id="ships"></div>
     </div>
     <div class="controls">

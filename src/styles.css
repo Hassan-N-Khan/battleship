@@ -46,7 +46,7 @@ div.opponent-board, div.player-board {
     border: 1px solid black;
 }
 #player-board div.ship, #opponent-board div.ship {
-    background-color: lightblue;
+    background-color: skyblue;
 }
 #player-board div.hit, #opponent-board div.hit {
     background-color: red;
@@ -57,12 +57,6 @@ div.opponent-board, div.player-board {
 
 /* Ships Container */
 .ships-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-#ships {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -89,4 +83,27 @@ button {
 }
 button:hover {
     background-color: #0056b3;
+}
+
+/* Cell Styling */
+.hover-effect {
+    background-color: lightblue;
+}
+.ships-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+#ships{
+    display: grid;
+    gap: 1px; 
+    cursor: pointer;
+}
+
+.shipCells{
+    background-color: lightblue;
+    width: 33px;
+    height: 33px;
+    border: 1px solid black;
 }
