@@ -1,6 +1,8 @@
 import "./game.js";
-import { createPlayerBoard, shipsToPlace } from "./game.js";
+import { createPlayerBoard, shipsToPlace, player1, player2, computerMove, gameInProgress } from "./game.js";
 
+
+let listenersAttached = false;
 //Creating the cells
 function createCells(){
     const board = document.getElementById("player-board");
@@ -32,7 +34,6 @@ function changeOrientation(){
     shipOrientation.addEventListener("click", (e) => {
         if (currentShipIndex >= shipsToPlace.length) return;
         orientation = orientation === 'vertical' ? 'horizontal' : 'vertical';
-        console.log(`Orientation is: ${orientation}`);
         if(orientation==='horizontal'){
             shipOrientation.style.removeProperty("grid-template-rows");
             shipOrientation.style.gridTemplateColumns = `repeat(${shipsToPlace[currentShipIndex].getLength()},33px)`;
@@ -102,7 +103,6 @@ function placeShip(){
             }
 
             if (!validPlacement) {
-                console.log("Invalid placement. Try again.");
                 return;
             }
 
@@ -132,6 +132,8 @@ function nextShip(){
     if (currentShipIndex >= shipsToPlace.length) {
         shipContainer.style.gridTemplateColumns = "";
         shipContainer.style.gridTemplateRows = "";
+        const yourShipsTitle = document.querySelector(".ships-container h2");
+        yourShipsTitle.innerHTML = ``;
         return;
     }
 
@@ -152,7 +154,114 @@ function nextShip(){
     }
 }
 
+document.querySelector("#reset-game").addEventListener("click", () => {
+    // 1. Reset key game state
+    listenersAttached = false;
+    currentShipIndex = 0;
+    orientation = "vertical";  // Reset orientation
+
+    // 2. Clear the boards completely
+    document.getElementById("player-board").innerHTML = "";
+    document.getElementById("opponent-board").innerHTML = "";
+
+    // 3. Reset "Your Ships" title
+    const yourShipsTitle = document.querySelector(".ships-container h2");
+    yourShipsTitle.innerHTML = "Your Ships";
+
+    // 4. Clear ship preview container
+    const shipContainer = document.getElementById("ships");
+    shipContainer.innerHTML = "";
+    shipContainer.style.gridTemplateColumns = "";
+    shipContainer.style.gridTemplateRows = "";
+
+    // 5. Re-create cells and rebind everything
+    createCells();        // 💥 Create new .cell elements
+    placeShip();          // 💥 Reattach hover + click listeners
+    nextShip();           // 💥 Show first ship preview
+
+});
+
+
+function playerAttack() {
+  document.querySelector("#start-game").addEventListener("click", (e) => {
+    if (currentShipIndex >= shipsToPlace.length && !listenersAttached) {
+      listenersAttached = true;
+
+      document.querySelectorAll(".cellOpp").forEach(cell => {
+        cell.addEventListener("mouseover", (e) => {
+          if (!gameInProgress) return;
+          e.target.classList.add("hover-effect");
+        });
+
+        cell.addEventListener("mouseout", (e) => {
+          e.target.classList.remove("hover-effect");
+        });
+
+        cell.addEventListener("click", (e) => {
+          if (!gameInProgress) return;
+
+          const x = parseInt(e.target.dataset.x, 10);
+          const y = parseInt(e.target.dataset.y, 10);
+
+          e.target.classList.remove("hover-effect");
+
+          const wasHit = player2.gameboard.getBoard()[y][x];
+
+          if (wasHit) {
+            e.target.classList.add("hit");
+          } else {
+            e.target.classList.add("miss");
+          }
+
+          setTimeout(() => {
+            if (player2.allShipsSunk()) {
+                gameInProgress = false;
+                removeHoverEffects();
+                alert("Player 1 wins!");
+            } else {
+                // Computer's turn
+                setTimeout(() => {
+                showComputerAttackOnBoard();
+                if (player1.allShipsSunk()) {
+                    gameInProgress = false;
+                    removeHoverEffects();
+                }
+                }, 1000);
+            }
+            }, 10); // even 10ms is enough
+        });
+      });
+    }
+  });
+}
+
+
+function showComputerAttackOnBoard() {
+    if (!gameInProgress) return;
+
+    const { x, y, wasHit } = computerMove();
+    const cell = document.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
+
+    if (!cell) return;
+
+    if (wasHit) {
+        cell.classList.add("hit");
+    } else {
+        cell.classList.add("miss");
+    }
+}
+
+function removeHoverEffects() {
+  document.querySelectorAll(".cellOpp.hover-effect").forEach(cell => {
+    cell.classList.remove("hover-effect");
+  });
+}
+
+
+
+
 createCells();
 changeOrientation();
 placeShip();
 nextShip();
+playerAttack();

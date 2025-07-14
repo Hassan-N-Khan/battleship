@@ -13,12 +13,8 @@ const shipsToPlace = [
 let currentShipIndex = 0;
 let gameInProgress = false;
 
-console.log("Player 1's Gameboard:");
-console.table(player1.gameboard.getBoard());
-
 function createPlayerBoard(xCoord,yCoord,orientation){
     if (currentShipIndex >= shipsToPlace.length) {
-        console.log("All ships placed!");
         return;
     }
     const x = parseInt(xCoord, 10);
@@ -29,26 +25,19 @@ function createPlayerBoard(xCoord,yCoord,orientation){
         x < 0 || x > 9 || y < 0 || y > 9 ||
         (orientation !== "horizontal" && orientation !== "vertical")
     ) {
-        console.log("Invalid input values.");
         return;
     }
 
     const ship = shipsToPlace[currentShipIndex];
     if (player1.canPlaceShip(ship, x, y, orientation)) {
         player1.placeShip(ship, x, y, orientation);
-        console.log(`Placed ship ${currentShipIndex + 1} at (${x}, ${y}) ${orientation}`);
         currentShipIndex++;
     } else {
-        console.log(`Cannot place ship at (${x}, ${y}) — try again.`);
         return;
     }
 
     if (currentShipIndex === shipsToPlace.length) {
-        console.log("✅ All ships placed!");
-        // Optionally disable the form or start the game
     }
-    console.log(`Player 1 Gameboard after ${currentShipIndex} submission.`)
-    console.table(player1.gameboard.getBoard());
     return true;
 }
 
@@ -73,16 +62,11 @@ function createComputerBoard(){
         const y = Math.floor(Math.random() * 10);
         const { ship } = shipsToPlacePlayer2[i];
         if (player2.canPlaceShip(ship, x, y, orientation)) {
-            console.log(`Successful placed Player 2 ${orientation} ship number ${i}, size of ${ship.getLength()}  at (${x}, ${y})!`)
             player2.placeShip(ship, x, y, orientation);
         } else {
-            console.log(`Cannot place Player 2 ${orientation} ship ${i}, size of ${ship.getLength()} at (${x}, ${y})! Trying Again!`);
             i--;
         }
     }
-
-    console.log("Player 2's Gameboard:");
-    console.table(player2.gameboard.getBoard());
 }
 
 function alternatePlayers(currentPlayer, player1, player2) {
@@ -96,13 +80,11 @@ function playerOneMove(x, y) {
     const parsedY = parseInt(y, 10);
 
     if (isNaN(parsedX) || isNaN(parsedY) || parsedX < 0 || parsedX > 9 || parsedY < 0 || parsedY > 9) {
-        console.log(`Invalid coordinates. Please enter numbers between 0 and 9.`);
         return false; // failed
     }
 
     const cell = player2.gameboard.getBoard()[parsedY][parsedX];
     if (cell === true || cell === false) {
-        console.log(`Already attacked this position (${parsedX}, ${parsedY})!`);
         return false; // failed
     }
 
@@ -110,12 +92,19 @@ function playerOneMove(x, y) {
     return true; // success
 }
 
-
 function computerMove() {
-    const x = Math.floor(Math.random() * 10);
-    const y = Math.floor(Math.random() * 10);
-    console.log(`Computer attacks at (${x}, ${y})`);
-    return [x, y];
+    let x, y, wasHit;
+
+    do {
+        x = Math.floor(Math.random() * 10);
+        y = Math.floor(Math.random() * 10);
+    } while (
+        player1.gameboard.isAlreadyAttacked(x, y)
+    );
+
+    wasHit = player1.receiveAttack(x, y); // returns true/false
+
+    return { x, y, wasHit };
 }
 
 function playGame() {
@@ -134,15 +123,12 @@ function playGame() {
             const moveSuccessful = playerOneMove(x, y);
 
             if (!moveSuccessful) {
-                console.log("Try again.");
                 return; // Don't switch turns if invalid
             }
 
-            console.log("Player 2 Gameboard after attack:");
-            console.table(player2.gameboard.getBoard());
 
             if (player2.allShipsSunk()) {
-                console.log("Player 1 wins!");
+                gameInProgress = false;
                 return;
             }
 
@@ -152,14 +138,12 @@ function playGame() {
             // Now let computer play
             setTimeout(() => {
                 if (!gameInProgress) return; // 💥 ignore clicks if game is not active
-                const [compX, compY] = computerMove();
+                const { x: compX, y: compY, wasHit } = computerMove()
                 player1.receiveAttack(compX, compY);
 
-                console.log(`${opponent.name}'s Gameboard after attack`);
-                console.table(player1.gameboard.getBoard());
 
                 if (player1.allShipsSunk()) {
-                    console.log("Computer wins!");
+                    gameInProgress = false;
                     return;
                 }
 
@@ -172,23 +156,21 @@ function playGame() {
 const startButton = document.querySelector("#start-game");
 startButton.addEventListener("click", (e)=>{
     if(currentShipIndex < shipsToPlace.length){
-        console.log("Please place all ships!");
         return;
     }
-    gameInProgress = true; // ✅ Set game as active
-    playGame();
+    if(gameInProgress===false){
+        gameInProgress = true; 
+        playGame();
+    }else{
+    }
 });
 
 const resartButton = document.querySelector("#reset-game");
 resartButton.addEventListener("click", (e)=>{
     gameInProgress = false; // 💥 stop game logic
     player1.gameboard.reset();
-    console.log("Player 1 gameboard after reset:");
-    console.table(player1.gameboard.getBoard());
     player2.gameboard.reset();
-    console.log("Player 2 gameboard after reset:");
-    console.table(player2.gameboard.getBoard());
     currentShipIndex = 0;
 });
 
-export {playGame, shipsToPlace, createPlayerBoard};
+export {playGame, shipsToPlace, createPlayerBoard, player2, player1, computerMove, gameInProgress};

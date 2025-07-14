@@ -52,7 +52,7 @@ div.opponent-board, div.player-board {
     background-color: red;
 }
 #player-board div.miss, #opponent-board div.miss {
-    background-color: lightgray;
+    background-color: gray;
 }
 
 /* Ships Container */
@@ -86,6 +86,9 @@ button:hover {
 }
 
 /* Cell Styling */
+.cell,.cellOpp{
+    cursor: pointer;
+}
 .hover-effect {
     background-color: lightblue;
 }
